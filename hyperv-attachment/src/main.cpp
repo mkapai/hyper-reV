@@ -1,4 +1,4 @@
-#include "arch/arch.h"
+﻿#include "arch/arch.h"
 #include "hypercall/hypercall.h"
 #include "hypercall/hypercall_def.h"
 #include "memory_manager/memory_manager.h"
@@ -17,7 +17,8 @@
 #ifndef _INTELMACHINE
 #include <intrin.h>
 #endif
-
+extern "C" void cli_func(void);
+extern "C" void clgi_func(void);
 typedef std::uint64_t(*vmexit_handler_t)(std::uint64_t a1, std::uint64_t a2, std::uint64_t a3, std::uint64_t a4);
 
 namespace
@@ -60,14 +61,7 @@ void process_first_vmexit()
     }
 }
 
-std::uint64_t do_vmexit_premature_return()
-{
-#ifdef _INTELMACHINE
-    return 0;
-#else
-    return __readgsqword(0);
-#endif
-}
+
 
 std::uint64_t vmexit_handler_detour(const std::uint64_t a1, const std::uint64_t a2, const std::uint64_t a3, const std::uint64_t a4)
 {
@@ -104,18 +98,34 @@ std::uint64_t vmexit_handler_detour(const std::uint64_t a1, const std::uint64_t 
             arch::set_guest_rsp(trap_frame->rsp);
             arch::advance_guest_rip();
 
-            return do_vmexit_premature_return();
+            goto callexit;
+
+
         }
     }
     else if (arch::is_slat_violation(exit_reason) == 1 && slat::violation::process() == 1)
     {
-        return do_vmexit_premature_return();
+        callexit:
+        {
+
+#ifdef _INTELMACHINE
+            cli_func();
+            return 0;
+#else
+            vmcb_t* const vmcb = arch::get_vmcb();
+            vmcb->control.vmexit_reason = SVM_EXIT_REASON_PAUSE;
+            //clgi_func();
+            goto end;
+#endif
+        }
     }
     else if (arch::is_non_maskable_interrupt_exit(exit_reason) == 1)
     {
         interrupts::process_nmi();
     }
 
+
+    end:
     return reinterpret_cast<vmexit_handler_t>(original_vmexit_handler)(a1, a2, a3, a4);
 }
 

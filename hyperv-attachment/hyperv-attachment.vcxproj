@@ -212,6 +212,7 @@
     <ClInclude Include="src\structures\virtual_address.h" />
   </ItemGroup>
   <ItemGroup>
+    <MASM Include="src\asm_funcs.asm" />
     <MASM Include="src\interrupts\interrupt_entry.asm" />
     <MASM Include="src\slat\cr3\intel_invept.asm" />
   </ItemGroup>

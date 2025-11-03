@@ -145,5 +145,8 @@
     <MASM Include="src\interrupts\interrupt_entry.asm">
       <Filter>Source Files</Filter>
     </MASM>
+    <MASM Include="src\asm_funcs.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
   </ItemGroup>
 </Project>
