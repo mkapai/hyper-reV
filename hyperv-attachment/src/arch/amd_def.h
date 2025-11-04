@@ -103,7 +103,7 @@ union npf_exit_info_1
 #define SVM_EXIT_REASON_PHYSICAL_NMI 0x61
 #define SVM_EXIT_REASON_CPUID 0x72
 #define SVM_EXIT_REASON_PAUSE 0x77
-
+#define SVM_EXIT_SMI   0x062
 #define SVM_EXIT_REASON_NPF 0x400
 
 #endif
