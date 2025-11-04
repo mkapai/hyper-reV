@@ -29,8 +29,13 @@ namespace arch
 	vmx_exit_qualification_ept_violation get_exit_qualification();
 
 	std::uint64_t get_guest_physical_address();
+
 #else
 	vmcb_t* get_vmcb();
 	void parse_vmcb_gadget(const std::uint8_t* get_vmcb_gadget);
 #endif
 }
+#ifdef _INTELMACHINE
+std::uint64_t vmread(const std::uint64_t field);
+void vmwrite(const std::uint64_t field, const std::uint64_t value);
+#endif

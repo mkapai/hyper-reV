@@ -109,8 +109,9 @@ std::uint64_t vmexit_handler_detour(const std::uint64_t a1, const std::uint64_t 
         {
 
 #ifdef _INTELMACHINE
-            cli_func();
-            return 0;
+            //cli_func();
+            vmwrite(VMCS_EXIT_REASON, VMX_EXIT_REASON_EXECUTE_PAUSE);
+            goto end;
 #else
             vmcb_t* const vmcb = arch::get_vmcb();
             vmcb->control.vmexit_reason = SVM_EXIT_REASON_PAUSE;
