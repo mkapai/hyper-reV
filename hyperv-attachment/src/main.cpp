@@ -107,7 +107,7 @@ std::uint64_t vmexit_handler_detour(const std::uint64_t a1, const std::uint64_t 
     {
         callexit:
         {
-
+            //If origina_vmexit_handler is implemented correctly, then this thread will sleep to handle system lpl
 #ifdef _INTELMACHINE
             //cli_func();
             //todo::need fix
