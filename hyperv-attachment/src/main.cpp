@@ -18,7 +18,12 @@
 #include <intrin.h>
 #endif
 extern "C" void cli_func(void);
+extern "C" void sti_func(void);
+
 extern "C" void clgi_func(void);
+extern "C" void stgi_func(void);
+
+
 typedef std::uint64_t(*vmexit_handler_t)(std::uint64_t a1, std::uint64_t a2, std::uint64_t a3, std::uint64_t a4);
 
 namespace
@@ -125,7 +130,6 @@ std::uint64_t vmexit_handler_detour(std::uint64_t a1,  std::uint64_t a2,  std::u
 #else
             vmcb_t* const vmcb = arch::get_vmcb();
             vmcb->control.vmexit_reason = SVM_EXIT_REASON_PAUSE;
-            //clgi_func();
             goto end;
 #endif
         }
@@ -134,9 +138,7 @@ std::uint64_t vmexit_handler_detour(std::uint64_t a1,  std::uint64_t a2,  std::u
     {
         interrupts::process_nmi();
     }
-
-
-    end:
+end:
     return reinterpret_cast<vmexit_handler_t>(original_vmexit_handler)(a1, a2, a3, a4);
 }
 
