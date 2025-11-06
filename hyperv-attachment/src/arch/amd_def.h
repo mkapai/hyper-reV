@@ -17,17 +17,17 @@ enum class tlb_control_t : std::uint32_t
 };
 union GuestInterruptStatus
 {
-	std::uint64_t data;
+	std::uint64_t flags;
 	struct
 	{
 		std::uint64_t interructShadow : 1;
 		std::uint64_t guestInterruptMask : 1;
 		std::uint64_t reservedBits : 62;
-	} fields;
+	} ;
 };
 union VIntr
 {
-	std::uint64_t data;
+	std::uint64_t flags;
 	struct
 	{
 		std::uint8_t vipr;
@@ -48,11 +48,11 @@ union VIntr
 		std::uint8_t enableAVIC : 1;
 		std::uint8_t vIntrVector;
 		std::uint8_t reservedBits4[3];
-	} fields;
+	} ;
 };
 union SVMExtendFeatureBits1
 {
-	std::uint64_t data;
+	std::uint64_t flags;
 	struct
 	{
 		std::uint8_t enableNestedPage : 1;
@@ -64,28 +64,28 @@ union SVMExtendFeatureBits1
 		std::uint8_t enableReadonlyGuestPage : 1;
 		std::uint8_t invlpgbTlbsynAsUd : 1;
 		std::uint8_t reservedBits[7];
-	} fields;
+	} ;
 };
 
 union SVMExtendFeatureBits2
 {
-	std::uint64_t data;
+	std::uint64_t flags;
 	struct
 	{
 		std::uint64_t enableLBRVirtualcation : 1;
 		std::uint64_t enableVirtualizedVmsaveVmload : 1;
 		std::uint64_t reservedBits : 62;
-	} fields;
+	} ;
 };
 
 union ApicBar
 {
-	std::uint64_t data;
+	std::uint64_t flags;
 	struct
 	{
 		std::uint64_t apicBar : 52;
 		std::uint64_t reservedBits : 12;
-	} fields;
+	} ;
 };
 
 union EventInj
@@ -99,7 +99,7 @@ union EventInj
 		std::uint64_t resvd1 : 19;
 		std::uint64_t vaild : 1;
 		std::uint64_t errorcode : 32;
-	} fields;
+	} ;
 };
 
 union vmcb_clean_t
@@ -156,23 +156,71 @@ struct vmcb_control_area_t
 	SVMExtendFeatureBits2 extend_features2;
 	vmcb_clean_t clean;
 	std::uint64_t next_rip;
-	std::uint8_t NumOfBytesFetched;            // +0x0d0
-	std::uint8_t GuestInstructionBytes[15];    // +0x0d1
-	std::uint64_t AvicApicBackingPagePointer;  // +0x0e0
-	std::uint64_t Reserved2;                   // +0x0e8
-	std::uint64_t AvicLogicalTablePointer;     // +0x0f0
-	std::uint64_t AvicPhysicalTablePointer;    // +0x0f8
-	std::uint64_t Reserved3;                   // +0x100
-	std::uint64_t VmcbSaveStatePointer;        // +0x108
-	std::uint8_t Reserved4[0x400 - 0x110];     // +0x110
+	std::uint8_t num_of_bytes_fetched;				// +0x0d0
+	std::uint8_t guest_instruction_bytes[15];		// +0x0d1
+	std::uint64_t avic_apic_backing_page_pointer;	// +0x0e0
+	std::uint64_t reserved2;						// +0x0e8
+	std::uint64_t avic_logical_table_pointer;		// +0x0f0
+	std::uint64_t avic_physical_table_pointer;		// +0x0f8
+	std::uint64_t reserved3;						// +0x100
+	std::uint64_t vmcb_save_state_pointer;			// +0x108
+	std::uint8_t reserved4[0x400 - 0x110];			// +0x110
 };
 static_assert(sizeof(vmcb_control_area_t) == 0x400, "vmcb_control_area_t size mismatch");
 
 struct vmcb_state_save_t
 {
-	std::uint8_t pad_one[0x150];
+	std::uint16_t es_selector;                  // +0x000
+	std::uint16_t es_attrib;                    // +0x002
+	std::uint32_t es_limit;                     // +0x004
+	std::uint64_t es_base;                      // +0x008
+	std::uint16_t cs_selector;                  // +0x010
+	std::uint16_t cs_attrib;                    // +0x012
+	std::uint32_t cs_limit;                     // +0x014
+	std::uint64_t cs_base;                      // +0x018
+	std::uint16_t ss_selector;                  // +0x020
+	std::uint16_t ss_attrib;                    // +0x022
+	std::uint32_t ss_limit;                     // +0x024
+	std::uint64_t ss_base;                      // +0x028
+	std::uint16_t ds_selector;                  // +0x030
+	std::uint16_t ds_attrib;                    // +0x032
+	std::uint32_t ds_limit;                     // +0x034
+	std::uint64_t ds_base;                      // +0x038
+	std::uint16_t fs_selector;                  // +0x040
+	std::uint16_t fs_attrib;                    // +0x042
+	std::uint32_t fs_limit;                     // +0x044
+	std::uint64_t fs_base;                      // +0x048
+	std::uint16_t gs_selector;                  // +0x050
+	std::uint16_t gs_attrib;                    // +0x052
+	std::uint32_t gs_limit;                     // +0x054
+	std::uint64_t gs_base;                      // +0x058
+	std::uint16_t gdtr_selector;                // +0x060
+	std::uint16_t gdtr_attrib;                  // +0x062
+	std::uint32_t gdtr_limit;                   // +0x064
+	std::uint64_t gdtr_base;                    // +0x068
+	std::uint16_t ldtr_selector;                // +0x070
+	std::uint16_t ldtr_attrib;                  // +0x072
+	std::uint32_t ldtr_limit;                   // +0x074
+	std::uint64_t ldtr_base;                    // +0x078
+	std::uint16_t idtr_selector;                // +0x080
+	std::uint16_t idtr_attrib;                  // +0x082
+	std::uint32_t idtr_limit;                   // +0x084
+	std::uint64_t idtr_base;                    // +0x088
+	std::uint16_t tr_selector;                  // +0x090
+	std::uint16_t tr_attrib;                    // +0x092
+	std::uint32_t tr_limit;                     // +0x094
+	std::uint64_t tr_base;						// +0x098
+	std::uint8_t reserved1[0x0cb - 0x0a0];		// +0x0a0
+	std::uint8_t cpl;							// +0x0cb
+	std::uint32_t reserved2;					// +0x0cc
+	std::uint64_t efer;							// +0x0d0
+	std::uint8_t Reserved3[0x148 - 0x0d8];		// +0x0d8
+	std::uint64_t cr4;							// +0x148
     std::uint64_t cr3;
-    std::uint8_t pad_five[0x20];
+	std::uint64_t cr0;							// +0x158
+	std::uint64_t dr7;							// +0x160
+	std::uint64_t dr6;							// +0x168
+	std::uint64_t rflags;						// +0x170
     std::uint64_t rip;
     std::uint8_t pad_six[0x58];
     std::uint64_t rsp;

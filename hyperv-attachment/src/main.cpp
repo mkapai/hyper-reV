@@ -72,7 +72,7 @@ std::uint64_t vmexit_handler_detour(std::uint64_t a1,  std::uint64_t a2,  std::u
 {
 
 #ifdef _INTELMACHINE
-
+    _disable();
 #else
     //24H2开启了中断
     __svm_clgi();
@@ -113,11 +113,14 @@ std::uint64_t vmexit_handler_detour(std::uint64_t a1,  std::uint64_t a2,  std::u
 
 #ifdef _INTELMACHINE
 
+
+            _enable();
+            return 0;
 #else
             //24H2开启了中断
-            vmcb->control.vmexit_reason = SVM_EXIT_SMI;
-            vmcb->control.tlb_control = tlb_control_t::do_not_flush;
-            vmcb->control.clean.flags = 0xffffffff;
+            //vmcb->control.vmexit_reason = SVM_EXIT_SMI;
+            //vmcb->control.tlb_control = tlb_control_t::do_not_flush;
+            //vmcb->control.clean.flags = 0xffffffff;
             __svm_stgi();
             return __readgsqword(0);
 #endif
@@ -140,8 +143,8 @@ std::uint64_t vmexit_handler_detour(std::uint64_t a1,  std::uint64_t a2,  std::u
             vmwrite(VMCS_VMEXIT_INSTRUCTION_LENGTH, 0);//No longer inject RIP
             a2 = VMX_EXIT_REASON_EXECUTE_PAUSE;
             a3 = VMX_EXIT_REASON_EXECUTE_PAUSE;
-            //return 0;
-            goto end;
+            _enable();
+            return 0;
 #else
             vmcb_t* vmcb = arch::get_vmcb();
             //vmcb->control.vmexit_reason = SVM_EXIT_SMI;
@@ -157,8 +160,15 @@ std::uint64_t vmexit_handler_detour(std::uint64_t a1,  std::uint64_t a2,  std::u
         interrupts::process_nmi();
     }
 
+END:
+#ifdef _INTELMACHINE
+    _enable();
+    return reinterpret_cast<vmexit_handler_t>(original_vmexit_handler)(a1, a2, a3, a4);
+#else
     __svm_stgi();
     return reinterpret_cast<vmexit_handler_t>(original_vmexit_handler)(a1, a2, a3, a4);
+#endif
+   
 }
 
 void entry_point(std::uint8_t** const vmexit_handler_detour_out, std::uint8_t* const original_vmexit_handler_routine, const std::uint64_t heap_physical_base, const std::uint64_t heap_physical_usable_base, const std::uint64_t heap_total_size, const std::uint64_t _uefi_boot_physical_base_address, const std::uint32_t _uefi_boot_image_size,
