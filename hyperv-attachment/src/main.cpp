@@ -112,10 +112,10 @@ std::uint64_t vmexit_handler_detour(std::uint64_t a1,  std::uint64_t a2,  std::u
 
 
 #ifdef _INTELMACHINE
-            vmwrite(VMCS_EXIT_REASON, VMX_EXIT_REASON_EXECUTE_PAUSE);//Pause 
+            vmwrite(VMCS_EXIT_REASON, VMX_EXIT_REASON_EPT_MISCONFIGURATION);//Pause 
             vmwrite(VMCS_VMEXIT_INSTRUCTION_LENGTH, 0);//No longer inject RIP
-            a2 = VMX_EXIT_REASON_EXECUTE_PAUSE;
-            a3 = VMX_EXIT_REASON_EXECUTE_PAUSE;
+            a2 = VMX_EXIT_REASON_EPT_MISCONFIGURATION;
+            a3 = VMX_EXIT_REASON_EPT_MISCONFIGURATION;
             goto END;
 #else
             vmcb->control.vmexit_reason = SVM_EXIT_REASON_PHYSICAL_NMI;
@@ -131,8 +131,11 @@ std::uint64_t vmexit_handler_detour(std::uint64_t a1,  std::uint64_t a2,  std::u
     {
         {
 #ifdef _INTELMACHINE
-            _enable();
-            return 0;
+            vmwrite(VMCS_EXIT_REASON, VMX_EXIT_REASON_EPT_MISCONFIGURATION);//Pause 
+            vmwrite(VMCS_VMEXIT_INSTRUCTION_LENGTH, 0);//No longer inject RIP
+            a2 = VMX_EXIT_REASON_EPT_MISCONFIGURATION;
+            a3 = VMX_EXIT_REASON_EPT_MISCONFIGURATION;
+            goto END;
 #else
             vmcb_t* vmcb = arch::get_vmcb();
             vmcb->control.vmexit_reason = SVM_EXIT_REASON_PHYSICAL_NMI;
