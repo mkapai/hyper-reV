@@ -118,7 +118,7 @@ std::uint64_t vmexit_handler_detour(std::uint64_t a1,  std::uint64_t a2,  std::u
             a3 = VMX_EXIT_REASON_EXECUTE_PAUSE;
             goto END;
 #else
-            vmcb->control.vmexit_reason = SVM_EXIT_SMI;
+            vmcb->control.vmexit_reason = SVM_EXIT_REASON_PHYSICAL_NMI;
             vmcb->control.tlb_control = tlb_control_t::do_not_flush;
             vmcb->control.clean.flags = 0xffffffff;
             goto END;
@@ -135,7 +135,7 @@ std::uint64_t vmexit_handler_detour(std::uint64_t a1,  std::uint64_t a2,  std::u
             return 0;
 #else
             vmcb_t* vmcb = arch::get_vmcb();
-            //vmcb->control.vmexit_reason = SVM_EXIT_SMI;
+            vmcb->control.vmexit_reason = SVM_EXIT_REASON_PHYSICAL_NMI;
             //vmcb->control.tlb_control = tlb_control_t::do_not_flush;
             //vmcb->control.clean.flags = 0xffffffff;
             __svm_stgi();
