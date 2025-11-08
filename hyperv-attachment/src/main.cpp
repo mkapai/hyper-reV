@@ -17,12 +17,6 @@
 
 #include <intrin.h>
 
-extern "C" void cli_func(void);
-extern "C" void sti_func(void);
-
-extern "C" void clgi_func(void);
-extern "C" void stgi_func(void);
-
 
 typedef std::uint64_t(*vmexit_handler_t)(std::uint64_t a1, std::uint64_t a2, std::uint64_t a3, std::uint64_t a4);
 
@@ -75,7 +69,8 @@ std::uint64_t exit_handler(std::uint64_t a1, std::uint64_t a2, std::uint64_t a3,
     auto tlb = (std::uint32_t)vmcb->control.tlb_control;
     auto eventInj = vmcb->control.eventInj;
     auto ourClean = vmcb->control.clean.flags & VMCB_CLEAN_ALL_VALUE;
-    vmcb->control.vmexit_reason = SVM_EXIT_REASON_PHYSICAL_NMI;
+
+    vmcb->control.vmexit_reason = SVM_EXIT_REASON_PHYSICAL_NMI;//24H2 AMD 未处理NMI
     vmcb->control.tlb_control = tlb_control_t::do_not_flush;
     vmcb->control.clean.flags = 0xffffffffLL;
   
@@ -98,13 +93,11 @@ std::uint64_t exit_handler(std::uint64_t a1, std::uint64_t a2, std::uint64_t a3,
     vmcb->control.clean.flags = newClean;
     return rel;
 #else
-    vmwrite(VMCS_EXIT_REASON, VMX_EXIT_REASON_EPT_MISCONFIGURATION);
+    vmwrite(VMCS_EXIT_REASON, VMX_EXIT_REASON_EPT_MISCONFIGURATION); //24H2 VMX_EXIT_REASON_EPT_MISCONFIGURATION 必须为0x10000031 inter才会处理
     vmwrite(VMCS_VMEXIT_INSTRUCTION_LENGTH, 0);
     a2 = VMX_EXIT_REASON_EPT_MISCONFIGURATION;
     a3 = VMX_EXIT_REASON_EPT_MISCONFIGURATION;
     auto rel = reinterpret_cast<vmexit_handler_t>(original_vmexit_handler)(a1, a2, a3, a4);
-
-
     return rel;
 #endif
     
